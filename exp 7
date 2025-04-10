@@ -1,0 +1,202 @@
+1
+import java.sql.*;
+import java.util.Scanner;
+
+public class ProductCRUD {
+
+    // Update these constants with your database connection details.
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/your_database";
+    private static final String DB_USER = "your_username";
+    private static final String DB_PASSWORD = "your_password";
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        while(true) {
+            System.out.println("\n----- Product CRUD Menu -----");
+            System.out.println("1. Create Product");
+            System.out.println("2. Read Products");
+            System.out.println("3. Update Product");
+            System.out.println("4. Delete Product");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+            
+            int choice = Integer.parseInt(sc.nextLine());
+            switch(choice) {
+                case 1: createProduct(sc); break;
+                case 2: readProducts(); break;
+                case 3: updateProduct(sc); break;
+                case 4: deleteProduct(sc); break;
+                case 5: 
+                    System.out.println("Exiting...");
+                    sc.close();
+                    System.exit(0);
+                default: 
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+    
+    // Gets a connection to the database.
+    private static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    }
+    
+    // Create a new product.
+    private static void createProduct(Scanner sc) {
+        System.out.print("Enter Product Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Price: ");
+        double price = Double.parseDouble(sc.nextLine());
+        System.out.print("Enter Quantity: ");
+        int quantity = Integer.parseInt(sc.nextLine());
+        
+        String sql = "INSERT INTO Product (ProductName, Price, Quantity) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            // Start a transaction.
+            conn.setAutoCommit(false);
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.setInt(3, quantity);
+            
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                conn.commit();
+                System.out.println("Product created successfully.");
+            } else {
+                conn.rollback();
+                System.out.println("Product creation failed.");
+            }
+        } catch(SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+    
+    // Read (display) all products.
+    private static void readProducts() {
+        String sql = "SELECT * FROM Product";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+             
+            System.out.println("\nProductID\tProductName\tPrice\tQuantity");
+            while (rs.next()) {
+                System.out.println(rs.getInt("ProductID") + "\t\t" 
+                        + rs.getString("ProductName") + "\t\t" 
+                        + rs.getDouble("Price") + "\t" 
+                        + rs.getInt("Quantity"));
+            }
+        } catch(SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+    
+    // Update an existing product.
+    private static void updateProduct(Scanner sc) {
+        System.out.print("Enter Product ID to update: ");
+        int id = Integer.parseInt(sc.nextLine());
+        System.out.print("Enter new Product Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter new Price: ");
+        double price = Double.parseDouble(sc.nextLine());
+        System.out.print("Enter new Quantity: ");
+        int quantity = Integer.parseInt(sc.nextLine());
+        
+        String sql = "UPDATE Product SET ProductName = ?, Price = ?, Quantity = ? WHERE ProductID = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            conn.setAutoCommit(false);
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.setInt(3, quantity);
+            ps.setInt(4, id);
+            
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                conn.commit();
+                System.out.println("Product updated successfully.");
+            } else {
+                conn.rollback();
+                System.out.println("Product update failed. Check if the Product ID exists.");
+            }
+        } catch(SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+    
+    // Delete a product.
+    private static void deleteProduct(Scanner sc) {
+        System.out.print("Enter Product ID to delete: ");
+        int id = Integer.parseInt(sc.nextLine());
+        String sql = "DELETE FROM Product WHERE ProductID = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            conn.setAutoCommit(false);
+            ps.setInt(1, id);
+            
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                conn.commit();
+                System.out.println("Product deleted successfully.");
+            } else {
+                conn.rollback();
+                System.out.println("Product deletion failed. Check if the Product ID exists.");
+            }
+        } catch(SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+2.  
+public class Student {
+    private int studentId;
+    private String name;
+    private String department;
+    private double marks;
+    
+    public Student() { }
+    
+    public Student(int studentId, String name, String department, double marks) {
+        this.studentId = studentId;
+        this.name = name;
+        this.department = department;
+        this.marks = marks;
+    }
+    
+    // Getters and setters
+    public int getStudentId() {
+        return studentId;
+    }
+    public void setStudentId(int studentId) {
+        this.studentId = studentId;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getDepartment() {
+        return department;
+    }
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+    public double getMarks() {
+        return marks;
+    }
+    public void setMarks(double marks) {
+        this.marks = marks;
+    }
+    
+    @Override
+    public String toString() {
+        return studentId + "\t" + name + "\t" + department + "\t" + marks;
+    }
+}
+
+
+
